@@ -4,18 +4,15 @@ export class ScanEngine {
   constructor(private modules: IScannerModule[]) {}
 
   async run(ctx: ScanContext): Promise<Finding[]> {
-    const allFindings: Finding[] = [];
+    const [first, ...rest] = this.modules;
+    if (!first) return [];
 
-    for (const mod of this.modules) {
-      const findings = await mod.execute(ctx);
-      allFindings.push(...findings);
-
-      const isUnreachable = findings.some(
-        (f) => f.type === "TARGET_UNREACHABLE"
-      );
-      if (isUnreachable) break;
+    const firstFindings = await first.execute(ctx);
+    if (firstFindings.some((f) => f.type === "TARGET_UNREACHABLE")) {
+      return firstFindings;
     }
 
-    return allFindings;
+    const parallelFindings = await Promise.all(rest.map((m) => m.execute(ctx)));
+    return [firstFindings, ...parallelFindings].flat();
   }
 }

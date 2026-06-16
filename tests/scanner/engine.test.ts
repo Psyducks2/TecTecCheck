@@ -47,4 +47,38 @@ describe("ScanEngine", () => {
     expect(findings).toHaveLength(1);
     expect(headersModule.execute).not.toHaveBeenCalled();
   });
+
+  it("executa módulos restantes em paralelo após o primeiro", async () => {
+    const callOrder: string[] = [];
+
+    const makeDelayed = (name: string, delayMs: number): IScannerModule => ({
+      name,
+      execute: vi.fn().mockImplementation(async () => {
+        await new Promise((r) => setTimeout(r, delayMs));
+        callOrder.push(name);
+        return [];
+      }),
+    });
+
+    const recon: IScannerModule = {
+      name: "recon",
+      execute: vi.fn().mockImplementation(async () => {
+        callOrder.push("recon");
+        return [];
+      }),
+    };
+
+    const engine = new ScanEngine([
+      recon,
+      makeDelayed("headers", 50),
+      makeDelayed("fingerprint", 50),
+    ]);
+    const start = Date.now();
+    await engine.run({ url: "https://example.com", scanId: "1" });
+    const elapsed = Date.now() - start;
+
+    expect(callOrder[0]).toBe("recon");
+    // headers + fingerprint ran in parallel (~50ms), not sequential (~100ms)
+    expect(elapsed).toBeLessThan(90);
+  });
 });
