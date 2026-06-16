@@ -22,7 +22,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:web": "npm run test -w web",
-    "build": "tsc",
+    "build": "tsc && npm run build -w web",
     "db:migrate": "prisma migrate dev",
     "db:generate": "prisma generate",
     "docker:up": "docker compose up -d"

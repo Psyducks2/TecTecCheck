@@ -17,6 +17,7 @@ export function useScanPolling() {
     generation.current += 1;
     if (timer.current) clearTimeout(timer.current);
     timer.current = null;
+    setBusy(false);
   }, []);
 
   // Cancel polling when the component unmounts.
