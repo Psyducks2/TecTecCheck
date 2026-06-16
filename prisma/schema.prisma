@@ -8,7 +8,7 @@ datasource db {
 
 model Target {
   id        String   @id @default(cuid())
-  url       String
+  url       String   @unique
   createdAt DateTime @default(now())
   scans     Scan[]
 }

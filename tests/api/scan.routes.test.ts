@@ -5,7 +5,7 @@ import request from "supertest";
 vi.mock("../../src/db/client", () => ({
   prisma: {
     target: {
-      create: vi.fn().mockResolvedValue({ id: "t1", url: "https://example.com" }),
+      upsert: vi.fn().mockResolvedValue({ id: "t1", url: "https://example.com" }),
     },
     scan: {
       create: vi.fn().mockResolvedValue({ id: "s1", status: "PENDING" }),
