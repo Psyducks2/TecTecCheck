@@ -19,10 +19,11 @@ vi.mock("../../src/queue/producer", () => ({
 }));
 
 import { scanRouter } from "../../src/api/routes/scan.routes";
+import { rateLimiter } from "../../src/api/server";
 
 const app = express();
 app.use(express.json());
-app.use("/api/scan", scanRouter);
+app.use("/api/scan", rateLimiter, scanRouter);
 
 describe("POST /api/scan", () => {
   it("retorna 201 e scanId para URL válida", async () => {
@@ -80,5 +81,15 @@ describe("POST /api/scan", () => {
       .post("/api/scan")
       .send({ url: "http://172.16.0.1/" });
     expect(res.status).toBe(400);
+  });
+
+  it("retorna 429 após exceder limite de requisições", async () => {
+    // Fire 21 requests — limit is 20 per window
+    const promises = Array.from({ length: 21 }, () =>
+      request(app).post("/api/scan").send({ url: "https://example.com" })
+    );
+    const results = await Promise.all(promises);
+    const tooMany = results.filter((r) => r.status === 429);
+    expect(tooMany.length).toBeGreaterThan(0);
   });
 });
