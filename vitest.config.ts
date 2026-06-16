@@ -4,6 +4,7 @@ export default defineConfig({
   test: {
     globals: false,
     environment: "node",
+    exclude: ["**/node_modules/**", "web/**"],
     env: {
       DATABASE_URL:
         "postgresql://tectec:tectec@localhost:5432/tecteccheck",
