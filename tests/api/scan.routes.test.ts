@@ -45,4 +45,40 @@ describe("POST /api/scan", () => {
     const res = await request(app).post("/api/scan").send({});
     expect(res.status).toBe(400);
   });
+
+  it("retorna 400 para URL com localhost (SSRF)", async () => {
+    const res = await request(app)
+      .post("/api/scan")
+      .send({ url: "http://localhost/admin" });
+    expect(res.status).toBe(400);
+    expect(res.body).toHaveProperty("error");
+  });
+
+  it("retorna 400 para URL com 127.0.0.1 (SSRF)", async () => {
+    const res = await request(app)
+      .post("/api/scan")
+      .send({ url: "http://127.0.0.1/" });
+    expect(res.status).toBe(400);
+  });
+
+  it("retorna 400 para URL com IP privado 192.168.x.x (SSRF)", async () => {
+    const res = await request(app)
+      .post("/api/scan")
+      .send({ url: "http://192.168.1.1/" });
+    expect(res.status).toBe(400);
+  });
+
+  it("retorna 400 para URL com IP privado 10.x.x.x (SSRF)", async () => {
+    const res = await request(app)
+      .post("/api/scan")
+      .send({ url: "http://10.0.0.1/" });
+    expect(res.status).toBe(400);
+  });
+
+  it("retorna 400 para URL com IP privado 172.16.x.x (SSRF)", async () => {
+    const res = await request(app)
+      .post("/api/scan")
+      .send({ url: "http://172.16.0.1/" });
+    expect(res.status).toBe(400);
+  });
 });
