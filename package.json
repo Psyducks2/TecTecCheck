@@ -1,10 +1,16 @@
 {
   "name": "tecteccheck",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "version": "0.1.0",
+  "description": "Scanner de vulnerabilidades web público — Headers, Fuzzing, Fingerprinting",
+  "main": "dist/api/server.js",
+  "bin": {
+    "tecteccheck": "./src/cli/index.ts"
+  },
   "directories": {
     "doc": "docs"
+  },
+  "engines": {
+    "node": ">=20"
   },
   "scripts": {
     "dev": "tsx src/api/server.ts",
@@ -17,15 +23,23 @@
     "db:generate": "prisma generate",
     "docker:up": "docker-compose up -d"
   },
-  "keywords": [],
+  "keywords": [
+    "security",
+    "scanner",
+    "vulnerability",
+    "cli",
+    "hacking",
+    "pentest"
+  ],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "type": "commonjs",
   "devDependencies": {
     "@types/express": "^5.0.6",
     "@types/node": "^25.9.3",
-    "dotenv": "^17.4.2",
+    "@types/supertest": "^7.2.0",
     "prisma": "^7.8.0",
+    "supertest": "^7.2.2",
     "tsx": "^4.22.4",
     "typescript": "^6.0.3",
     "vitest": "^4.1.9"
@@ -37,6 +51,7 @@
     "chalk": "^5.6.2",
     "cheerio": "^1.2.0",
     "commander": "^15.0.0",
+    "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "ioredis": "^5.11.1",
     "ora": "^9.4.0",
