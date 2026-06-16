@@ -1,0 +1,26 @@
+export type Severity = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+
+export type ScanStatus = "PENDING" | "RUNNING" | "COMPLETED" | "FAILED";
+
+export interface Vulnerability {
+  id: string;
+  module: string;
+  type: string;
+  severity: Severity;
+  description: string;
+  evidence: string | null;
+}
+
+export interface ScanReport {
+  scanId: string;
+  url: string;
+  status: ScanStatus;
+  startedAt: string | null;
+  finishedAt: string | null;
+  vulnerabilities: Vulnerability[];
+}
+
+export interface Health {
+  status: "ok" | "degraded";
+  checks: { db: boolean; redis: boolean };
+}
