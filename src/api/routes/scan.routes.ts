@@ -45,12 +45,24 @@ scanRouter.get("/:id/report", async (req: Request, res: Response) => {
     return;
   }
 
+  const identificationVuln = scan.vulnerabilities.find(
+    (v) => v.type === "SITE_IDENTIFICATION"
+  );
+
   res.json({
     scanId: scan.id,
     url: scan.target.url,
     status: scan.status,
     startedAt: scan.startedAt,
     finishedAt: scan.finishedAt,
-    vulnerabilities: scan.vulnerabilities,
+    identification: identificationVuln
+      ? {
+          summary: identificationVuln.description,
+          evidence: identificationVuln.evidence,
+        }
+      : null,
+    vulnerabilities: scan.vulnerabilities.filter(
+      (v) => v.type !== "SITE_IDENTIFICATION"
+    ),
   });
 });

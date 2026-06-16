@@ -6,6 +6,7 @@ import { ReconModule } from "../scanner/modules/recon.module";
 import { HeadersModule } from "../scanner/modules/headers.module";
 import { FuzzerModule } from "../scanner/modules/fuzzer.module";
 import { FingerprintModule } from "../scanner/modules/fingerprint.module";
+import { IdentificationModule } from "../scanner/modules/identification.module";
 import type { ScanJobData } from "./producer";
 
 const connection = {
@@ -15,6 +16,7 @@ const connection = {
 
 const engine = new ScanEngine([
   new ReconModule(),
+  new IdentificationModule(),
   new HeadersModule(),
   new FuzzerModule(),
   new FingerprintModule(),

@@ -18,12 +18,18 @@ interface Vulnerability {
   module: string;
 }
 
+interface SiteIdentification {
+  summary: string;
+  evidence: string;
+}
+
 interface ScanReport {
   scanId: string;
   url: string;
   status: string;
   startedAt: string | null;
   finishedAt: string | null;
+  identification: SiteIdentification | null;
   vulnerabilities: Vulnerability[];
 }
 
@@ -38,6 +44,35 @@ export async function runReportCommand(scanId: string): Promise<void> {
     console.log(`Alvo:   ${chalk.cyan(report.url)}`);
     console.log(`Status: ${chalk.green(report.status)}`);
     console.log(`ID:     ${report.scanId}`);
+
+    if (report.identification) {
+      console.log(chalk.bold("\n--- Identificação do Site ---"));
+
+      const summaryParts = report.identification.summary.split(" | ");
+      for (const part of summaryParts) {
+        const [label, ...rest] = part.split(": ");
+        if (rest.length > 0) {
+          console.log(`  ${chalk.gray(label + ":")} ${rest.join(": ")}`);
+        } else {
+          console.log(`  ${part}`);
+        }
+      }
+
+      if (report.identification.evidence) {
+        console.log(chalk.bold("\n--- Headers HTTP (curl -I style) ---\n"));
+        const lines = report.identification.evidence.split("\n");
+        for (const line of lines) {
+          if (line.startsWith("< ")) {
+            const [key, ...rest] = line.slice(2).split(": ");
+            console.log(`  ${chalk.green("<")} ${chalk.cyan(key + ":")} ${rest.join(": ")}`);
+          } else if (line.startsWith("---")) {
+            console.log(chalk.gray(`\n  ${line}`));
+          } else if (line.trim()) {
+            console.log(`  ${chalk.yellow(line)}`);
+          }
+        }
+      }
+    }
 
     if (report.vulnerabilities.length === 0) {
       console.log(chalk.green("\n✓ Nenhuma vulnerabilidade encontrada."));
