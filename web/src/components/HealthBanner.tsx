@@ -1,7 +1,14 @@
 import type { Health } from "../types";
 
-export function HealthBanner({ health }: { health: Health | null }) {
+export function HealthBanner({ health }: { health: Health | "unreachable" | null }) {
   if (!health) return null;
+  if (health === "unreachable") {
+    return (
+      <div className="banner down">
+        Backend inacessível — a API não está respondendo. Rode <code>npm run dev</code>.
+      </div>
+    );
+  }
   if (health.status === "ok") {
     return <div className="banner up">Backend OK — banco e fila conectados.</div>;
   }
