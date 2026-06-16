@@ -15,6 +15,10 @@ export function rateLimiter(req: Request, res: Response, next: NextFunction) {
   const entry = ipRequests.get(ip);
 
   if (!entry || now > entry.resetAt) {
+    // Clean up expired entries when resetting this IP
+    for (const [key, val] of ipRequests) {
+      if (now > val.resetAt) ipRequests.delete(key);
+    }
     ipRequests.set(ip, { count: 1, resetAt: now + RATE_WINDOW_MS });
     return next();
   }

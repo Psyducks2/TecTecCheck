@@ -16,6 +16,7 @@ async function fetchWithRetry(url: string, retries = 1) {
       if (attempt === retries) throw err;
     }
   }
+  throw new Error("fetchWithRetry: unreachable");
 }
 
 export class ReconModule implements IScannerModule {
@@ -25,9 +26,9 @@ export class ReconModule implements IScannerModule {
     try {
       const response = await fetchWithRetry(ctx.url);
       ctx.initialResponse = {
-        status: response!.status,
-        headers: response!.headers as Record<string, string>,
-        data: response!.data as string,
+        status: response.status,
+        headers: response.headers as Record<string, string>,
+        data: response.data as string,
       };
       return [];
     } catch (err: any) {
