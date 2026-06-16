@@ -21,7 +21,7 @@
     "build": "tsc",
     "db:migrate": "prisma migrate dev",
     "db:generate": "prisma generate",
-    "docker:up": "docker-compose up -d"
+    "docker:up": "docker compose up -d"
   },
   "keywords": [
     "security",
@@ -34,6 +34,9 @@
   "author": "",
   "license": "MIT",
   "type": "commonjs",
+  "workspaces": [
+    "web"
+  ],
   "devDependencies": {
     "@types/express": "^5.0.6",
     "@types/node": "^25.9.3",
@@ -45,6 +48,7 @@
     "vitest": "^4.1.9"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "axios": "^1.18.0",
     "bullmq": "^5.78.1",
