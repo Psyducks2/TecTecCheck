@@ -13,15 +13,16 @@ async function followRedirects(
 ): Promise<{ finalResponse: AxiosResponse; chain: SiteIdentification["redirectChain"] }> {
   const chain: SiteIdentification["redirectChain"] = [];
   let currentUrl = url;
-  let response: AxiosResponse | null = null;
+  let finalResponse: AxiosResponse | undefined;
 
   for (let i = 0; i <= maxRedirects; i++) {
-    response = await axios.get(currentUrl, {
+    const response = await axios.get(currentUrl, {
       timeout: 30000,
       validateStatus: () => true,
       maxRedirects: 0,
       headers: { "User-Agent": UA },
     });
+    finalResponse = response;
 
     const status = response.status;
     if (status >= 300 && status < 400) {
@@ -42,7 +43,8 @@ async function followRedirects(
     }
   }
 
-  return { finalResponse: response!, chain };
+  if (!finalResponse) throw new Error("followRedirects: no response received");
+  return { finalResponse, chain };
 }
 
 export class IdentificationModule implements IScannerModule {

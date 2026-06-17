@@ -1,5 +1,19 @@
 export type Severity = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
 
+export type ModuleName =
+  | "recon"
+  | "identification"
+  | "headers"
+  | "fuzzer"
+  | "fingerprint";
+
+export interface ScanConfig {
+  headers?: Record<string, string>;
+  excludePaths?: string[];
+  maxRps?: number;
+  modules?: ModuleName[];
+}
+
 export type ScanStatus = "PENDING" | "RUNNING" | "COMPLETED" | "FAILED";
 
 export interface Vulnerability {

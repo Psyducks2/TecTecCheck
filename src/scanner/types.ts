@@ -29,9 +29,24 @@ export interface SiteIdentification {
   technologies: string[];
 }
 
+export type ModuleName =
+  | "recon"
+  | "identification"
+  | "headers"
+  | "fuzzer"
+  | "fingerprint";
+
+export interface ScanConfig {
+  headers?: Record<string, string>;
+  excludePaths?: string[];
+  maxRps?: number;
+  modules?: ModuleName[];
+}
+
 export interface ScanContext {
   url: string;
   scanId: string;
+  config?: ScanConfig;
   initialResponse?: InitialResponse;
   siteIdentification?: SiteIdentification;
 }

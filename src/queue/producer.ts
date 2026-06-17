@@ -1,10 +1,12 @@
 import { Queue } from "bullmq";
 import { env } from "../config/env";
+import type { ScanConfig } from "../scanner/types";
 
 export interface ScanJobData {
   scanId: string;
   targetId: string;
   url: string;
+  config?: ScanConfig;
 }
 
 const connection = {

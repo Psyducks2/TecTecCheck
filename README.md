@@ -70,7 +70,10 @@ One command boots PostgreSQL + Redis (Docker), the API, the worker, and the web 
 npm run dev
 ```
 
-- Web UI: **http://localhost:5173** — enter a URL and watch findings appear, grouped by severity. A banner reports backend health (DB/Redis down, or API unreachable).
+- Web UI: **http://localhost:5173** — dark-themed security dashboard with three tabs:
+  - **Scanner** — URL input, animated scan progress, error reporting
+  - **Resultados** — findings grouped by severity with summary chips; auto-opens when scan completes
+  - **Sistema** — live status cards for API, PostgreSQL and Redis
 - API: http://localhost:3000
 
 **First run only**, create the database schema once (in a second terminal):
@@ -110,6 +113,33 @@ npm run cli -- report <scanId>
 | `npm run db:migrate` | Run Prisma migrations |
 | `npm run db:generate` | Generate Prisma client |
 | `npm run docker:up` | Start Postgres + Redis |
+
+## Web UI
+
+Dark-themed dashboard built with React + Vite + TypeScript. No UI framework — pure CSS with design tokens.
+
+**Tabs**
+
+| Tab | Content |
+|-----|---------|
+| **Scanner** | URL input field, animated scan button, live progress card |
+| **Resultados** | Severity summary chips, findings grouped by severity; auto-switches when scan completes |
+| **Sistema** | Status cards for API, PostgreSQL, Redis — polled every 5 s |
+
+**Color system** (semantic tokens):
+
+| Role | Color | Used for |
+|------|-------|----------|
+| Background deep | `#0F172A` | Page background |
+| Surface | `#1E293B` | Cards, panels |
+| Primary blue | `#2563EB` | Buttons, active tab, charts |
+| Cyan accent | `#0EA5E9` | Progress, links, evidence text |
+| Success green | `#10B981` | Online status, no findings, completed |
+| Warning yellow | `#FBBF24` | MEDIUM severity, degraded service |
+| Danger red | `#EF4444` | CRITICAL findings, errors, service down |
+| Orange | `#F97316` | HIGH severity |
+
+**Typography:** Space Grotesk (headings) · Inter (body) · JetBrains Mono (evidence, URLs)
 
 ## Severity Levels
 

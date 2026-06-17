@@ -1,4 +1,4 @@
-import type { Health, ScanReport } from "./types";
+import type { Health, ScanConfig, ScanReport } from "./types";
 
 async function asJson<T>(res: Response): Promise<T> {
   if (!res.ok) {
@@ -8,11 +8,14 @@ async function asJson<T>(res: Response): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-export async function postScan(url: string): Promise<{ scanId: string }> {
+export async function postScan(
+  url: string,
+  config?: ScanConfig
+): Promise<{ scanId: string }> {
   const res = await fetch("/api/scan", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ url }),
+    body: JSON.stringify({ url, config }),
   });
   return asJson<{ scanId: string }>(res);
 }

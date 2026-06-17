@@ -14,7 +14,7 @@ scanRouter.post("/", async (req: Request, res: Response) => {
     return;
   }
 
-  const { url } = parsed.data;
+  const { url, config } = parsed.data;
 
   const target = await prisma.target.upsert({
     where: { url },
@@ -23,7 +23,7 @@ scanRouter.post("/", async (req: Request, res: Response) => {
   });
   const scan = await prisma.scan.create({ data: { targetId: target.id } });
 
-  await enqueueScan({ scanId: scan.id, targetId: target.id, url });
+  await enqueueScan({ scanId: scan.id, targetId: target.id, url, config });
 
   res.status(201).json({ scanId: scan.id, status: scan.status });
 });

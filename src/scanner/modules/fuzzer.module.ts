@@ -64,9 +64,28 @@ type PathResult = {
   location?: string;
 };
 
+function matchesExclusion(path: string, exclusions: string[]): boolean {
+  return exclusions.some((exc) => {
+    if (exc.startsWith("/")) {
+      const lastSlash = exc.lastIndexOf("/", exc.length - 1);
+      if (lastSlash > 0) {
+        try {
+          const pattern = exc.slice(1, lastSlash);
+          const flags = exc.slice(lastSlash + 1);
+          return new RegExp(pattern, flags).test("/" + path);
+        } catch {
+          return false;
+        }
+      }
+    }
+    return path === exc || path.startsWith(exc + "/");
+  });
+}
+
 async function checkPath(
   baseUrl: string,
-  path: string
+  path: string,
+  extraHeaders: Record<string, string> = {}
 ): Promise<PathResult | null> {
   const url = `${baseUrl.replace(/\/$/, "")}/${path}`;
   try {
@@ -74,6 +93,7 @@ async function checkPath(
       timeout: env.fuzzerTimeoutMs,
       validateStatus: () => true,
       maxRedirects: 0,
+      headers: extraHeaders,
     });
     const { status } = response;
     if (
@@ -277,12 +297,22 @@ export class FuzzerModule implements IScannerModule {
   }
 
   async execute(ctx: ScanContext): Promise<Finding[]> {
+    const exclusions = ctx.config?.excludePaths ?? [];
+    const customHeaders = ctx.config?.headers ?? {};
+    const effectiveConcurrency = ctx.config?.maxRps
+      ? Math.max(1, Math.min(env.fuzzerConcurrency, ctx.config.maxRps))
+      : env.fuzzerConcurrency;
+
+    const activeWordlist = exclusions.length
+      ? this.wordlist.filter((path) => !matchesExclusion(path, exclusions))
+      : this.wordlist;
+
     const generic403 = await detectGeneric403(ctx.url);
 
-    const tasks = this.wordlist.map(
-      (path) => () => checkPath(ctx.url, path)
+    const tasks = activeWordlist.map(
+      (path) => () => checkPath(ctx.url, path, customHeaders)
     );
-    const results = await runConcurrent(tasks, env.fuzzerConcurrency);
+    const results = await runConcurrent(tasks, effectiveConcurrency);
 
     const findings: Finding[] = [];
     for (const result of results) {
@@ -295,7 +325,7 @@ export class FuzzerModule implements IScannerModule {
       }
 
       if (result.status === 200) {
-        const html = await this.fetchBody(ctx.url, result.path);
+        const html = await this.fetchBody(ctx.url, result.path, customHeaders);
         if (html && isGeneric404Page(html)) continue;
       }
 
@@ -315,13 +345,18 @@ export class FuzzerModule implements IScannerModule {
     return findings;
   }
 
-  private async fetchBody(baseUrl: string, path: string): Promise<string> {
+  private async fetchBody(
+    baseUrl: string,
+    path: string,
+    extraHeaders: Record<string, string> = {}
+  ): Promise<string> {
     try {
       const url = `${baseUrl.replace(/\/$/, "")}/${path}`;
       const response = await axios.get(url, {
         timeout: env.fuzzerTimeoutMs,
         validateStatus: () => true,
         maxRedirects: 0,
+        headers: extraHeaders,
       });
       return typeof response.data === "string" ? response.data : "";
     } catch {

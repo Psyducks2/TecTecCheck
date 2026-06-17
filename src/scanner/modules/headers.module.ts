@@ -80,7 +80,7 @@ export class HeadersModule implements IScannerModule {
       const response = await axios.get(ctx.url, {
         timeout: 30000,
         validateStatus: () => true,
-        headers: { "User-Agent": UA },
+        headers: { "User-Agent": UA, ...(ctx.config?.headers ?? {}) },
       });
       responseHeaders = response.headers as Record<string, string>;
     }

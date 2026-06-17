@@ -4,13 +4,17 @@ import type { Finding, IScannerModule, ScanContext } from "../types";
 const UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36";
 
-async function fetchWithRetry(url: string, retries = 1) {
+async function fetchWithRetry(
+  url: string,
+  extraHeaders: Record<string, string> = {},
+  retries = 1
+) {
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
       return await axios.get(url, {
         timeout: 30000,
         validateStatus: () => true,
-        headers: { "User-Agent": UA },
+        headers: { "User-Agent": UA, ...extraHeaders },
       });
     } catch (err: any) {
       if (attempt === retries) throw err;
@@ -24,7 +28,7 @@ export class ReconModule implements IScannerModule {
 
   async execute(ctx: ScanContext): Promise<Finding[]> {
     try {
-      const response = await fetchWithRetry(ctx.url);
+      const response = await fetchWithRetry(ctx.url, ctx.config?.headers ?? {});
       ctx.initialResponse = {
         status: response.status,
         headers: response.headers as Record<string, string>,

@@ -21,6 +21,15 @@ function isPrivateHost(url: string): boolean {
   }
 }
 
+const MODULE_NAMES = ["recon", "identification", "headers", "fuzzer", "fingerprint"] as const;
+
+export const scanConfigSchema = z.object({
+  headers: z.record(z.string(), z.string()).optional(),
+  excludePaths: z.array(z.string()).optional(),
+  maxRps: z.number().int().min(1).max(50).optional(),
+  modules: z.array(z.enum(MODULE_NAMES)).optional(),
+});
+
 export const scanRequestSchema = z.object({
   url: z
     .string()
@@ -33,6 +42,7 @@ export const scanRequestSchema = z.object({
       (url) => !isPrivateHost(url),
       "URL não pode apontar para endereços privados ou loopback"
     ),
+  config: scanConfigSchema.optional(),
 });
 
 export type ScanRequest = z.infer<typeof scanRequestSchema>;

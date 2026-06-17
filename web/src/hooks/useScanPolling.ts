@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { postScan, getReport } from "../api";
-import type { ScanReport } from "../types";
+import type { ScanConfig, ScanReport } from "../types";
 
 const TERMINAL = new Set(["COMPLETED", "FAILED"]);
 const POLL_MS = 1500;
@@ -24,7 +24,7 @@ export function useScanPolling() {
   useEffect(() => stop, [stop]);
 
   const start = useCallback(
-    async (url: string) => {
+    async (url: string, config?: ScanConfig) => {
       stop();
       const myGen = generation.current;
       const isCurrent = () => generation.current === myGen;
@@ -51,7 +51,7 @@ export function useScanPolling() {
       };
 
       try {
-        const { scanId } = await postScan(url);
+        const { scanId } = await postScan(url, config);
         if (!isCurrent()) return;
         await poll(scanId);
       } catch (err) {

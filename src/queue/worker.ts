@@ -8,24 +8,42 @@ import { FuzzerModule } from "../scanner/modules/fuzzer.module";
 import { FingerprintModule } from "../scanner/modules/fingerprint.module";
 import { IdentificationModule } from "../scanner/modules/identification.module";
 import type { ScanJobData } from "./producer";
+import type { IScannerModule, ModuleName } from "../scanner/types";
 
 const connection = {
   url: env.redisUrl,
   maxRetriesPerRequest: null,
 };
 
-const engine = new ScanEngine([
-  new ReconModule(),
-  new IdentificationModule(),
-  new HeadersModule(),
-  new FuzzerModule(),
-  new FingerprintModule(),
-]);
+const MODULE_REGISTRY: Record<ModuleName, IScannerModule> = {
+  recon: new ReconModule(),
+  identification: new IdentificationModule(),
+  headers: new HeadersModule(),
+  fuzzer: new FuzzerModule(),
+  fingerprint: new FingerprintModule(),
+};
+
+const DEFAULT_MODULE_ORDER: ModuleName[] = [
+  "recon",
+  "identification",
+  "headers",
+  "fuzzer",
+  "fingerprint",
+];
+
+function buildEngine(modules?: ModuleName[]): ScanEngine {
+  const order =
+    modules && modules.length > 0 ? modules : DEFAULT_MODULE_ORDER;
+  const instances = order
+    .map((name) => MODULE_REGISTRY[name])
+    .filter((m): m is IScannerModule => m != null);
+  return new ScanEngine(instances);
+}
 
 const worker = new Worker<ScanJobData>(
   "scans",
   async (job) => {
-    const { scanId, url } = job.data;
+    const { scanId, url, config } = job.data;
 
     await prisma.scan.update({
       where: { id: scanId },
@@ -33,7 +51,8 @@ const worker = new Worker<ScanJobData>(
     });
 
     try {
-      const findings = await engine.run({ url, scanId });
+      const engine = buildEngine(config?.modules);
+      const findings = await engine.run({ url, scanId, config });
 
       await prisma.vulnerability.createMany({
         data: findings.map((f) => ({
